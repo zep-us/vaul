@@ -341,63 +341,6 @@ function Root({
     };
   }, []);
 
-  React.useEffect(() => {
-    function onVisualViewportChange() {
-      if (!drawerRef.current) return;
-
-      const focusedElement = document.activeElement as HTMLElement;
-      if (isInput(focusedElement) || keyboardIsOpen.current) {
-        const visualViewportHeight = window.visualViewport?.height || 0;
-        // This is the height of the keyboard
-        let diffFromInitial = window.innerHeight - visualViewportHeight;
-        const drawerHeight = drawerRef.current.getBoundingClientRect().height || 0;
-        if (!initialDrawerHeight.current) {
-          initialDrawerHeight.current = drawerHeight;
-        }
-        const offsetFromTop = drawerRef.current.getBoundingClientRect().top;
-
-        // visualViewport height may change due to some subtle changes to the keyboard. Checking if the height changed by 60 or more will make sure that they keyboard really changed its open state.
-        if (Math.abs(previousDiffFromInitial.current - diffFromInitial) > 60) {
-          keyboardIsOpen.current = !keyboardIsOpen.current;
-        }
-
-        if (snapPoints && snapPoints.length > 0 && snapPointsOffset && activeSnapPointIndex) {
-          const activeSnapPointHeight = snapPointsOffset[activeSnapPointIndex] || 0;
-          diffFromInitial += activeSnapPointHeight;
-        }
-
-        previousDiffFromInitial.current = diffFromInitial;
-        // We don't have to change the height if the input is in view, when we are here we are in the opened keyboard state so we can correctly check if the input is in view
-        if (drawerHeight > visualViewportHeight || keyboardIsOpen.current) {
-          const height = drawerRef.current.getBoundingClientRect().height;
-          let newDrawerHeight = height;
-
-          if (height > visualViewportHeight) {
-            newDrawerHeight = visualViewportHeight - WINDOW_TOP_OFFSET;
-          }
-          // When fixed, don't move the drawer upwards if there's space, but rather only change it's height so it's fully scrollable when the keyboard is open
-          if (fixed) {
-            drawerRef.current.style.height = `${height - Math.max(diffFromInitial, 0)}px`;
-          } else {
-            drawerRef.current.style.height = `${Math.max(newDrawerHeight, visualViewportHeight - offsetFromTop)}px`;
-          }
-        } else {
-          drawerRef.current.style.height = `${initialDrawerHeight.current}px`;
-        }
-
-        if (snapPoints && snapPoints.length > 0 && !keyboardIsOpen.current) {
-          drawerRef.current.style.bottom = `0px`;
-        } else {
-          // Negative bottom value would never make sense
-          drawerRef.current.style.bottom = `${Math.max(diffFromInitial, 0)}px`;
-        }
-      }
-    }
-
-    window.visualViewport?.addEventListener('resize', onVisualViewportChange);
-    return () => window.visualViewport?.removeEventListener('resize', onVisualViewportChange);
-  }, [activeSnapPointIndex, snapPoints, snapPointsOffset]);
-
   function closeDrawer() {
     if (!drawerRef.current) return;
 
