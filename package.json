@@ -19,6 +19,7 @@
     }
   },
   "scripts": {
+    "prepare": "pnpm build",
     "type-check": "tsc --noEmit",
     "build": "pnpm type-check && bunchee",
     "dev": "bunchee --watch",
